@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
 	std::cout << "cell size              " << cellSize << "\n";
 	std::cout << "propagation step size  " << propagationStepSize << "\n";
 	std::cout << "goal bias              " << goalBias << "\n";
-	std::cout << "average running time   " << propagationStepSize << "\n";
+	std::cout << "average running time   " << avgRunningTime << "\n";
 	std::cout << "success rate           " << successRate << "\n";
 	std::cout << "====================\n";
     } // end for each DOF
