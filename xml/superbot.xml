@@ -1,0 +1,18 @@
+<Robot name="SuperRobot">
+  <robot prefix="first_" file="robot.dae"/>
+  <robot prefix="second_" file="robot.dae">
+    <kinbody>
+      <body name="second_link0">
+	<offsetfrom>first_link6</offsetfrom>
+	<geom type="trimesh" modifiable="false">
+	  <translation>-1.00000000e-02 0.00000000e+00 1.02000000e+00</translation>
+	</geom>
+      </body>
+      <joint name="joint_denso_dummy" type="hinge" enable="false">
+	<body>first_link6</body>
+	<body>second_link0</body>
+	<limits>0 0</limits>
+      </joint>
+    </kinbody>
+  </robot>
+</Robot>
