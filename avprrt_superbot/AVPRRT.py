@@ -103,6 +103,7 @@ class RRTPlanner(object):
         self.treestart = Tree(FW, v_start)
         self.treeend = Tree(BW, v_goal)
         self.robot = robot
+        self.env = self.robot.GetEnv()
         self.connectingstring = ''
         self.runningtime = 0.0
         self.nn = -1
@@ -335,7 +336,7 @@ class AVPBiRRTPlanner(RRTPlanner):
     def ExtendFW(self, c_rand):
         nnindices = self.NearestNeighborIndices(c_rand, FW)
         for index in nnindices:
-            print "Extending forward from index = {0}".format(index)
+            # print "Extending forward from index = {0}".format(index)
             v_near = self.treestart.verticeslist[index]
             
             q_beg = v_near.config.q
@@ -355,12 +356,12 @@ class AVPBiRRTPlanner(RRTPlanner):
             c_new = Config(q_end, qs_end, qss_end)
 
             # check feasibility of c_new
-            print "\tCheck feasibility"
+            # print "\tCheck feasibility"
             if not self.IsFeasibleConfiguration(c_new):
                 status = self.TRAPPED
                 continue
             # interpolate a trajectory from v_near.config to c_new
-            print "\tInterpolate a trajectory"
+            # print "\tInterpolate a trajectory"
             for rep in xrange(self._max_repeat_interation):
                 # interpolation duration is shorter every time it fails
                 T = (self._factor**rep)*self._interation_duration
@@ -376,7 +377,7 @@ class AVPBiRRTPlanner(RRTPlanner):
                 if (not inlimits):
                     continue
                 # check feasibility (AVP + collision checking)
-                print "\tCheck trajectory feasibility"
+                # print "\tCheck trajectory feasibility"
                 result = self.IsFeasibleTrajectory(trajectorystring, FW, 
                                                    v_near.sdmin, v_near.sdmax)
                 if not (result[0] == 1):
@@ -387,7 +388,7 @@ class AVPBiRRTPlanner(RRTPlanner):
                 v_new.sdmax = result[2]
                 v_new.level = v_near.level + 1
                 self.treestart.AddVertex(index, v_new, trajectorystring)
-                print "Successful extension"
+                # print "Successful extension"
                 return status
             status = self.TRAPPED
         return status
@@ -395,7 +396,7 @@ class AVPBiRRTPlanner(RRTPlanner):
     def ExtendBW(self, c_rand):
         nnindices = self.NearestNeighborIndices(c_rand, BW)
         for index in nnindices:
-            print "Extending backward from index = {0}".format(index)
+            # print "Extending backward from index = {0}".format(index)
             v_near = self.treeend.verticeslist[index]
             
             q_end = v_near.config.q
@@ -415,12 +416,12 @@ class AVPBiRRTPlanner(RRTPlanner):
             c_new = Config(q_beg, qs_beg, qss_beg)
 
             # check feasibility of c_new
-            print "\tCheck feasibility"
+            # print "\tCheck feasibility"
             if not self.IsFeasibleConfiguration(c_new):
                 status = self.TRAPPED
                 continue
             # interpolate a trajectory from v_near.config to c_new
-            print "\tInterpolate a trajectory"
+            # print "\tInterpolate a trajectory"
             for rep in xrange(self._max_repeat_interation):
                 # interpolation duration is shorter every time it fails
                 T = (self._factor**rep)*self._interation_duration
@@ -436,7 +437,7 @@ class AVPBiRRTPlanner(RRTPlanner):
                 if (not inlimits):
                     continue
                 # check feasibility (AVP + collision checking)
-                print "\tCheck trajectory feasibility"
+                # print "\tCheck trajectory feasibility"
                 result = self.IsFeasibleTrajectory(trajectorystring, BW, 
                                                    v_near.sdmin, v_near.sdmax)
                 if not (result[0] == 1):
@@ -447,7 +448,7 @@ class AVPBiRRTPlanner(RRTPlanner):
                 v_new.sdmax = result[2]
                 v_new.level = v_near.level + 1
                 self.treeend.AddVertex(index, v_new, trajectorystring)
-                print "Successful extension"
+                # print "Successful extension"
                 return status
             status = self.TRAPPED
         return status
@@ -548,10 +549,9 @@ class AVPBiRRTPlanner(RRTPlanner):
 
     def IsFeasibleConfiguration(self, c_rand):
         feasible = True
-        env = self.robot.GetEnv()
         with self.robot:
             self.robot.SetActiveDOFValues(c_rand.q)
-            incollision = (env.CheckCollision(self.robot, CollisionReport()) or 
+            incollision = (self.env.CheckCollision(self.robot, CollisionReport()) or 
                            self.robot.CheckSelfCollision(CollisionReport()))
         if incollision:
             feasible = False
@@ -585,20 +585,19 @@ class AVPBiRRTPlanner(RRTPlanner):
                 return [NOTINTERSECT, -1, -1]
             
         # check collision
-        env = self.robot.GetEnv()
         ndof = self.robot.GetActiveDOF()
         traj = TOPP.Trajectory.PiecewisePolynomialTrajectory.FromString(trajectorystring)
         for s in np.arange(0, traj.duration, self.discrtimestep):
             with self.robot:
                 self.robot.SetActiveDOFValues(traj.Eval(s))
-                incollision = (env.CheckCollision(self.robot, CollisionReport()) or 
+                incollision = (self.env.CheckCollision(self.robot, CollisionReport()) or 
                                self.robot.CheckSelfCollision(CollisionReport()))
             if incollision:
                 return [INCOLLISION, -1, -1]
             
         with self.robot:
             self.robot.SetActiveDOFValues(traj.Eval(traj.duration))
-            incollision = (env.CheckCollision(self.robot, CollisionReport()) or 
+            incollision = (self.env.CheckCollision(self.robot, CollisionReport()) or 
                            self.robot.CheckSelfCollision(CollisionReport()))
         if incollision:
             return [INCOLLISION, -1, -1]
