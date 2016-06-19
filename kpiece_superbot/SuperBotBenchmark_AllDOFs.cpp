@@ -164,6 +164,12 @@ int main(int argc, char *argv[]) {
 	std::cout << "average running time   " << avgRunningTime << "\n";
 	std::cout << "success rate           " << successRate << "\n";
 	std::cout << "====================\n";
+
+	if (nSuccess == 0) {
+	    std::cout << "KPIECE failed to find any solution at all for ndof = " << ndof << std::endl;
+	    std::cout << "Stop trying with higher DOF" << std::endl;
+	    break;
+	}
     } // end for each DOF
     
     return 0;
