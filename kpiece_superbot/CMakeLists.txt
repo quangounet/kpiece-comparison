@@ -35,5 +35,4 @@ macro(build_openrave_plugin name)
   install(TARGETS ${name} DESTINATION . )
 endmacro(build_openrave_plugin)
 
-build_openrave_executable(SuperBotBenchmark)
 build_openrave_executable(SuperBotBenchmark_AllDOFs)
