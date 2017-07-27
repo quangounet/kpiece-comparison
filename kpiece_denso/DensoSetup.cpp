@@ -42,12 +42,13 @@ public:
 	{
 	    EnvironmentMutex::scoped_lock lock(probot->GetEnv()->GetMutex());
 	    probot->SetDOFValues(jointvalues, CLA_NOTHING);
-	    if (probot->CheckSelfCollision())
-		return false;
-	    if (probot->GetEnv()->CheckCollision(probot))
-		return false;
-	    else
-		return true;
+	    return true;
+	    // if (probot->CheckSelfCollision())
+	    // 	return false;
+	    // if (probot->GetEnv()->CheckCollision(probot))
+	    // 	return false;
+	    // else
+	    // 	return true;
 	}
     }
 };

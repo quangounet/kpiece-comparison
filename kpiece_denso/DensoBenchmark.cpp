@@ -21,15 +21,19 @@ inline bool exists(const std::string& name) {
   return (stat (name.c_str(), &buffer) == 0); 
 }
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
-    std::string scenefilename = "../../robots/denso_base.xml";
+    std::string scenefilename = "../../../cri1/robots/denso_base.xml";
     std::string viewername = "qtcoin";
+    std::string collisioncheckername = "ode";
 
-    // Start OpenRAVE core
-    RaveInitialize(true);
+    // Start OpenRAVE coreg
+    OpenRAVE::RaveInitialize(true);
     EnvironmentBasePtr penv = RaveCreateEnvironment();
+    CollisionCheckerBasePtr pchecker = RaveCreateCollisionChecker(penv, collisioncheckername);
+    penv->SetCollisionChecker(pchecker);
     penv->Load(scenefilename); // load the scene
+
     
     std::vector<RobotBasePtr> probots;
     penv->GetRobots(probots);
@@ -42,7 +46,7 @@ int main(int argc, char **argv)
 	qddLimits[i] = qddLimits[i] * accelerationScalingFactor;
     probot->SetDOFAccelerationLimits(qddLimits);
 
-    int ndof = 6;
+    int ndof = atoi(argv[1]);
     std::vector<int> activedofs;
     for (int i = 0; i < ndof; i++)
 	activedofs.push_back(i);
@@ -74,6 +78,22 @@ int main(int argc, char **argv)
     double avgRunningTime = 0.0;
     unsigned int nSuccess = 0;
     double successRate;
+    
+    std::stringstream outfilename;
+    if (cellSize == 0.05) {
+	outfilename << "data/KPIECE1_" << ndof << "DOF.data";
+    }
+    else if (cellSize == 0.1) {    
+	outfilename << "data/KPIECE2_" << ndof << "DOF.data";
+    }
+    else if (cellSize == 1.0) { 
+	outfilename << "data/KPIECE3_" << ndof << "DOF.data";
+    }
+    else {
+	outfilename << "data/KPIECE4_" << ndof << "DOF.data";
+    }
+    std::cout << outfilename.str() << std::endl;
+
     for (unsigned int r = 0; r < nRuns; r++)
     {
 	DensoSetup ds(probot);
@@ -91,7 +111,7 @@ int main(int argc, char **argv)
     }
     successRate = nSuccess / nRuns;
     
-    std::string outputFileName = "data/KPIECE1_varying_dof.data";
+    std::string outputFileName = outfilename.str();//"../data/KPIECE_var_dof.data";
     std::ofstream outFile;
     outFile.open(outputFileName.c_str(), std::ios::app);
     std::stringstream newData;

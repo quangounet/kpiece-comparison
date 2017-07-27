@@ -550,7 +550,7 @@ class AVPBiRRTPlanner(RRTPlanner):
         feasible = True
         env = self.robot.GetEnv()
         with self.robot:
-            self.robot.SetDOFValues(c_rand.q)
+            self.robot.SetActiveDOFValues(c_rand.q)
             incollision = (env.CheckCollision(self.robot, CollisionReport()) or 
                            self.robot.CheckSelfCollision(CollisionReport()))
         if incollision:
@@ -590,14 +590,14 @@ class AVPBiRRTPlanner(RRTPlanner):
         traj = TOPP.Trajectory.PiecewisePolynomialTrajectory.FromString(trajectorystring)
         for s in np.arange(0, traj.duration, self.discrtimestep):
             with self.robot:
-                self.robot.SetDOFValues(traj.Eval(s))
+                self.robot.SetActiveDOFValues(traj.Eval(s))
                 incollision = (env.CheckCollision(self.robot, CollisionReport()) or 
                                self.robot.CheckSelfCollision(CollisionReport()))
             if incollision:
                 return [INCOLLISION, -1, -1]
             
         with self.robot:
-            self.robot.SetDOFValues(traj.Eval(traj.duration))
+            self.robot.SetActiveDOFValues(traj.Eval(traj.duration))
             incollision = (env.CheckCollision(self.robot, CollisionReport()) or 
                            self.robot.CheckSelfCollision(CollisionReport()))
         if incollision:

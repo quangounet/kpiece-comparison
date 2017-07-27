@@ -12,7 +12,7 @@ const bool _includeVelocityDistance = true;
 const double threshold = 0.1;
 
 const double propagationStepSize = 0.05;
-const double goalBias = 0.2;
+const double goalBias = 1.0;
 const unsigned int propagationMinSteps = 1;
 const unsigned int propagationMaxSteps = 10;
 const unsigned int maxCloseSamplesCount = 100;

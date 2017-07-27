@@ -1,43 +1,51 @@
-from openravepy import *
+import openravepy as orpy
 import numpy as np
 import time
 import TOPP
-import AVPRRT_varying_dof as AVPRRT
+import AVPRRT
 import Utils
 
-env = Environment()
-env.Load('../../robots/denso_base.xml')
+showviewer = False
+envname = '../../cri1/robots/denso_base.xml'
+ccheckername = 'ode' 
 
-collisionchecker = RaveCreateCollisionChecker(env, 'ode')
+env = orpy.Environment()
+env.Load(envname)
+
+collisionchecker = orpy.RaveCreateCollisionChecker(env, ccheckername)
 env.SetCollisionChecker(collisionchecker)
-env.SetViewer('qtcoin')
+if showviewer:
+    env.SetViewer('qtcoin')
 
 robot = env.GetRobots()[0]
 [qL, qU] = robot.GetDOFLimits()
 vmax = robot.GetDOFVelocityLimits()
-amax = robot.GetDOFAccelerationLimits()
-robot.SetDOFAccelerationLimits(0.4*amax)
+amax_prev = robot.GetDOFAccelerationLimits()
+ascale = 0.4
+robot.SetDOFAccelerationLimits(ascale*amax_prev)
 amax = robot.GetDOFAccelerationLimits()
 
-ndof = 6
+ndof = int(raw_input("Please enter the number of DOFs: "))
 
 if (ndof > 6):
     for i in xrange(6, ndof):
         np.asarray(qU.tolist().append(qU[i - 6]))
         np.asarray(qL.tolist().append(qU[i - 6]))
         np.asarray(vmax.tolist().append(vmax[i - 6]))
-        np.asarray(amax.tolist().append(amax[i - 6]))       
+        np.asarray(amax.tolist().append(amax[i - 6]))
+else:
+    qU = qU[0:ndof]
+    qL = qL[0:ndof]
+    vmax = vmax[0:ndof]
+    amax = amax[0:ndof]
+robot.SetActiveDOFs(xrange(ndof))
 
-robot2 = AVPRRT.Robot(ndof, qU[0:ndof], qL[0:ndof], vmax[0:ndof], amax[0:ndof])
-
-integrationtimestep0 = 0.005
-reparamtimestep0 = 0.01
+integrationtimestep0 = 5e-3
+reparamtimestep0 = 1e-2
 passswitchpointnsteps0 = 5
-tuningsstring0 = "%f %f %d"%(integrationtimestep0, 
-                             reparamtimestep0, 
-                             passswitchpointnsteps0)
+tuningsstring0 = "%f %f %d"%(integrationtimestep0, reparamtimestep0, passswitchpointnsteps0)
 
-discrtimestep0 = 0.0005
+discrtimestep0 = 0.5e-3
 constraintsstring0 = str(discrtimestep0)
 constraintsstring0 += "\n" + ' '.join([str(v) for v in vmax])
 constraintsstring0 += "\n" + ' '.join([str(a) for a in amax])
@@ -75,7 +83,7 @@ plantime = []
 topptime = []
 for i in xrange(nruns):
     print "iteration: {0}".format(i + 1)
-    birrtinstance = AVPRRT.AVPBiRRTPlanner(v_start, v_goal, robot2, problemtype, 
+    birrtinstance = AVPRRT.AVPBiRRTPlanner(v_start, v_goal, robot, problemtype, 
                                            constraintsstring0, tuningsstring0, 
                                            nn, metrictype, polynomialdegree)
     birrtinstance.Run(allottedtime)
@@ -86,10 +94,10 @@ for i in xrange(nruns):
     #traj0 = TOPP.Trajectory.PiecewisePolynomialTrajectory.FromString(trajectorystring0)
 
     #-------------------- TOPP --------------------
-    integrationtimestep1 = 0.0005
-    reparamtimestep1 = 0.01
+    integrationtimestep1 = 1e-3
+    reparamtimestep1 = 1e-2
     passswitchpointnsteps1 = 5
-    discrtimestep1 = 0.0005
+    discrtimestep1 = 0.5e-3
     constraintsstring1 = str(discrtimestep1)
     constraintsstring1 += "\n" + ' '.join([str(v) for v in vmax])
     constraintsstring1 += "\n" + ' '.join([str(a) for a in amax])
@@ -131,11 +139,12 @@ print "Average planning time = {0} s.".format(avgplantime)
 print "Average reparamaterization time = {0} s.".format(avgtopptime)
 print "Average running time = {0} s.".format(avgrunningtime)
 
-FILENAME = 'data/AVPRRT_varying_dof.data'
+FILENAME = 'data/AVPRRT_{0}DOF.data'.format(ndof)
 
-with open(FILENAME, 'r') as f:
-    datastring = f.read()
+# with open(FILENAME, 'r') as f:
+#     datastring = f.read()
 
-datastring += "{0} {1} {2} {3}\n".format(ndof, avgplantime, avgtopptime, avgrunningtime)
+datastring = "{0} {1} {2} {3}\n".format(ndof, avgplantime, avgtopptime, avgrunningtime)
 with open(FILENAME, 'w') as f:
     f.write(datastring)
+

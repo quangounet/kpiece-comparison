@@ -25,7 +25,7 @@ void SetViewer(EnvironmentBasePtr penv, const std::string& viewername)
 
 int main(int argc, char **argv)
 {
-    std::string scenefilename = "../../robots/denso_base.xml";
+    std::string scenefilename = "../../cri1/robots/denso_base.xml";
     std::string viewername = "qtcoin";
 
     // Start OpenRAVE core

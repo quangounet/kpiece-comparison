@@ -2,7 +2,7 @@ import openravepy as orpy
 import numpy as np
 import time
 import TOPP
-import AVPRRT
+import AVPRRT2 as AVPRRT
 import Utils
 
 showviewer = False
@@ -10,11 +10,11 @@ envname = '../xml/superbot.xml'
 ccheckername = 'ode'
 
 problemtype = "KinematicLimits"
-integrationtimestep0 = 1e-3
+integrationtimestep0 = .5e-3
 reparamtimestep0 = 1e-2
 passswitchpointnsteps0 = 5
 discrtimestep0 = 0.5e-3
-integrationtimestep1 = 1e-3
+integrationtimestep1 = .5e-3
 reparamtimestep1 = 1e-2
 passswitchpointnsteps1 = 5
 discrtimestep1 = 0.5e-3
@@ -45,7 +45,8 @@ aScale = 0.4
 aMax = aScale * realAcc
 robot.SetDOFAccelerationLimits(aMax)
 
-ndofs = xrange(2, 13)
+# ndofs = xrange(2, 13)
+ndofs = [6]
 for ndof in ndofs:
     print "nDOF = {0}".format(ndof)
     robot.SetActiveDOFs(range(ndof))
